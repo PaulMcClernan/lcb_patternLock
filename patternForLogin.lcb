@@ -1,0 +1,413 @@
+widget community.ferruslogic.widget.patternlogin
+
+    use com.livecode.canvas
+    use com.livecode.widget
+    use com.livecode.library.widgetutils
+    use com.livecode.engine
+    use com.livecode.math
+
+
+    metadata title is "Pattern 4 Login"
+    metadata author is "FerrusLogic"
+    metadata version is "0.0.1"
+    metadata svgicon is "M12 16C13.1 16 14 16.9 14 18S13.1 20 12 20 10 19.1 10 18 10.9 16 12 16M12 10C13.1 10 14 10.9 14 12S13.1 14 12 14 10 13.1 10 12 10.9 10 12 10M12 4C13.1 4 14 4.9 14 6S13.1 8 12 8 10 7.1 10 6 10.9 4 12 4M6 16C7.1 16 8 16.9 8 18S7.1 20 6 20 4 19.1 4 18 4.9 16 6 16M6 10C7.1 10 8 10.9 8 12S7.1 14 6 14 4 13.1 4 12 4.9 10 6 10M6 4C7.1 4 8 4.9 8 6S7.1 8 6 8 4 7.1 4 6 4.9 4 6 4M18 16C19.1 16 20 16.9 20 18S19.1 20 18 20 16 19.1 16 18 16.9 16 18 16M18 10C19.1 10 20 10.9 20 12S19.1 14 18 14 16 13.1 16 12 16.9 10 18 10M18 4C19.1 4 20 4.9 20 6S19.1 8 18 8 16 7.1 16 6 16.9 4 18 4Z"
+
+    private variable mWorkRect as Rectangle
+
+
+    private variable mRecalculate as Boolean
+    private variable mHeight as Real
+    private variable mWidth as Real
+    private variable mBackgroundOpacity as Real
+    private variable mCirclePathList as List
+    private variable mRectList as List
+    private variable mBackColor as Color
+
+    constant kRadius is 5
+
+
+
+
+
+    metadata backgroundColor.default is "244,244,244"
+    metadata backgroundColor.editor	is "com.livecode.pi.color"
+    metadata backgroundColor.label is "background color"
+
+    property backgroundOpacity 		get getBackgroundOpacity		set setBackgroundOpacity
+    metadata backgroundOpacity.default is "100"
+    metadata backgroundOpacity.editor	is "com.livecode.pi.number"
+    metadata backgroundOpacity.label is "background Opacity"
+
+    private handler setBackgroundOpacity(in pBackgroundOpacity as Real)
+        if pBackgroundOpacity is not empty then
+            if pBackgroundOpacity >= 0 and pBackgroundOpacity <= 100 then
+                  put pBackgroundOpacity / 100 into mBackgroundOpacity
+            end if
+        end if
+
+        redraw all
+    end handler
+
+
+    private handler getBackgroundOpacity() returns Real
+        return mBackgroundOpacity * 100
+    end handler
+
+
+    metadata foregroundColor.default is "50,50,50"
+    metadata foregroundColor.label is "Color"
+    metadata foregroundColor.editor	is "com.livecode.pi.color"
+
+
+    public handler OnCreate()
+        put 0 into mBackgroundOpacity
+        updateParameters()
+    end handler
+
+
+    public handler OnLoad(in pProperties as Array)
+      if "backgroundOpacity" is among the keys of pProperties then
+			put pProperties["backgroundOpacity"] into mBackgroundOpacity
+		end if
+    end handler
+
+
+
+ 	public handler OnSave(out rProperties as Array)
+    	put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
+    end handler
+
+
+
+
+    public handler updateParameters() returns nothing
+        variable xC as Integer
+        variable tRect as Rectangle
+        variable tRectSize as Real
+        variable tCounter as Integer
+
+        put my height into mHeight
+        put my width into mWidth
+        put 1 into tCounter
+
+        variable tExtraspace as Real
+
+        if mHeight > mWidth then
+          put (mHeight - mWidth)/2 into tExtraspace
+          put rectangle [0, tExtraspace, mWidth, mHeight - tExtraspace] into mWorkRect
+
+        else if mHeight < mWidth then
+            put (mWidth - mHeight)/2 into tExtraspace
+            put rectangle [tExtraspace, 0, mWidth - tExtraspace, mHeight] into mWorkRect
+
+        else
+          put rectangle [0, 0, mWidth, mHeight] into mWorkRect
+
+        end if
+
+        put (the width of mWorkRect)/3 into tRectSize
+
+        put rectangle[the left of mWorkRect, the top of mWorkRect, the left of mWorkRect+tRectSize, the top of mWorkRect+tRectSize] into tRect
+        put [] into mRectList
+        put [] into mCirclePathList
+
+
+
+        repeat with xC from 1 up to 9
+          push tRect onto back of mRectList
+
+          push circle path centered at point [(the left of tRect) + (the width of tRect)/2,(the top of tRect) + (the height of tRect)/2] with radius 25 onto back of mCirclePathList
+
+
+          if tCounter is 3 then
+            add  tRectSize to the top of tRect
+            set the left of tRect to the left of mWorkRect
+            put 1 into tCounter
+
+          else
+            add  tRectSize to the left of tRect
+            add 1 to tCounter
+
+          end if
+
+        end repeat
+
+        put false into mRecalculate
+    end handler
+
+
+
+
+    public handler OnGeometryChanged()
+      if my width is not mWidth or my height is not mHeight then
+        updateParameters()
+      end if
+    end handler
+
+
+
+    public handler OnPaint()
+    	set the antialias of this canvas to true
+        if mRecalculate then
+          updateParameters()
+        end if
+
+        variable tElement as Path
+
+        set the paint of this canvas to my background paint
+        set the opacity of this canvas to mBackgroundOpacity
+
+        // TODO: Preguntarle a Del como poner los bordes redondeados
+        fill rounded rectangle path of mWorkRect with radius 8 on this canvas
+
+        set the opacity of this canvas to 1
+        repeat for each element tElement in  mCirclePathList
+            set the paint of this canvas to my foreground paint
+            
+
+            set the opacity of this canvas to 0.1
+
+          if not mNodePathList is [] then  
+           if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
+            
+           // if  (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) and (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) then
+         		set the opacity of this canvas to 0.5
+            else
+            	
+
+            end if
+        end if
+
+            fill tElement on this canvas
+            set the opacity of this canvas to 1
+            ---set the radius of tElement to 5
+
+            fill circle path centered at rectCenter(the bounding box of tElement) with radius 5 on this canvas
+              
+        end repeat
+
+
+        ------------------Lineas--------------------
+        if mNodePathList is not [] then
+        	set the stroke width of this canvas to 6
+        	if the number of elements in mNodePathList > 1 then
+        		move to nodeNumbertoCenter(the first element of mNodePathList) on this canvas
+
+        		variable tCurrentNode as Integer
+        		repeat with tCurrentNode from 2 up to the number of elements in mNodePathList
+        			line to nodeNumbertoCenter( element tCurrentNode of mNodePathList) on this canvas 
+        		end repeat
+        	end if
+
+        	move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
+			line to (the mouse position) on this canvas
+
+			stroke this canvas
+        end if
+        
+
+
+    end handler
+
+
+   private variable mMouseIsDown as Boolean
+
+ public handler OnMouseDown()
+   		put true into mMouseIsDown
+   		put [] into mNodePathList
+    end handler
+
+
+
+ public handler OnMouseUp()
+   put false into mMouseIsDown
+
+   	post "Login" to my script object
+   put [] into mNodePathList
+   redraw all
+ end handler
+
+    private variable mNodePathList as List
+
+  public handler OnMouseMove()
+  	variable tElement as Path
+  	variable tTNode as Integer
+
+	   if mMouseIsDown then
+	   	 repeat for each element tElement in  mCirclePathList
+ 			if (the mouse position) is within the bounding box of tElement then
+ 				put (the index of tElement in mCirclePathList) into tTNode
+
+ 				if not (tTNode is in mNodePathList)  then
+ 					push (the index of tElement in mCirclePathList) onto back of mNodePathList 					
+ 					execute script "mobileVibrate" with [1]
+ 				end if
+ 				
+ 			end if
+         end repeat
+
+          redraw all
+	   end if 
+
+
+    end handler
+
+
+
+ private handler nodeNumbertoCenter(in pNodeNum as Integer) returns Point
+   		return rectCenter(element pNodeNum of mRectList) 
+    end handler
+
+-------------------------------------helpers-------------------------------------------
+
+    public handler AdjustColorForEnabledState(in pColor as Color, in pEnabled as Boolean) returns Color
+        if pEnabled then
+            set the alpha of pColor to 1
+        else
+            set the alpha of pColor to 0.5
+        end if
+
+          return pColor
+    end handler
+
+
+    public handler colorToString(in pColor as Color, in pIncludeAlpha as Boolean) returns String
+        variable tColor as String
+
+        if pColor is nothing then
+          return ""
+        end if
+
+        put FormatInt(the rounded of ((the red of pColor) * 255)) into tColor
+        put "," & FormatInt(the rounded of ((the green of pColor) * 255)) after tColor
+        put "," & FormatInt(the rounded of ((the blue of pColor) * 255)) after tColor
+
+        if pIncludeAlpha then
+          put "," & FormatInt(the rounded of ((the alpha of pColor) * 255)) after tColor
+        end if
+
+        return tColor
+    end handler
+
+
+
+
+
+
+
+    public handler FormatInt(in pNumber as Number) returns String
+      variable tNumberString as String
+
+      put pNumber formatted as string into tNumberString
+
+      if "." is in tNumberString then
+        variable tDotOffset
+        put the first offset of "." in tNumberString into tDotOffset
+        delete char tDotOffset to (the number of chars in tNumberString) of tNumberString
+      end if
+
+      return tNumberString
+    end handler
+
+
+    public handler rectCenter(in pRect as Rectangle) returns Point
+        return point [the left of pRect + the width of pRect / 2, the top of pRect + the height of pRect / 2]
+    end handler
+
+
+    public handler resizeControlWidth(in pScriptObject as ScriptObject, in pIdealWidth as Number) returns nothing
+        variable tLeft as String
+        get property "topleft" of pScriptObject
+        put the result into tLeft
+
+        variable tList
+        split tLeft by "," into tList
+        put element 1 of tList into tLeft
+
+        set property "width" of pScriptObject to the rounded of (pIdealWidth + 0.5)
+        set property "left" of pScriptObject to tLeft
+    end handler
+
+
+    public handler resizeControlToRect(in pScriptObject as ScriptObject, in pRect as Rectangle, in pAlignToSide as String) returns nothing
+          // We want to maintain the center left coordinate
+          variable tSide as String
+          variable tLoc as String
+          variable tFixedLoc as String
+          variable tList as List
+          variable tProp as String
+
+          -- Get current position
+          if ["top left", "bottom left", "top right", "bottom right"] contains [pAlignToSide] then
+            put pAlignToSide into tProp
+            replace " " with "" in tProp
+          else if ["left", "right"] contains [pAlignToSide] then
+            put "top" & pAlignToSide into tProp
+          else if pAlignToSide is "top" then
+            put "topleft" into tProp
+          else
+            put "bottomleft" into tProp
+          end if
+
+          get property tProp of pScriptObject
+          put the result into tSide
+          split tSide by "," into tList
+
+          -- Set dimensions
+          set property "width" of pScriptObject to the rounded of (the width of pRect + 0.5)
+          set property "height" of pScriptObject to the rounded of (the height of pRect + 0.5)
+
+          -- Now reposition
+          if ["top left", "bottom left", "top right", "bottom right"] contains [pAlignToSide] then
+            set property tProp of pScriptObject to element 1 of tList & "," & element 2 of tList
+          else
+
+            if pAlignToSide is "left" or pAlignToSide is "right" then
+              put element 1 of tList into tSide
+            else
+              put element 2 of tList into tSide
+            end if
+
+            get property "loc" of pScriptObject
+            put the result into tLoc
+            split tLoc by "," into tList
+
+            if pAlignToSide is "left" or pAlignToSide is "right" then
+              put element 2 of tList into tFixedLoc
+            else
+              put element 1 of tList into tFixedLoc
+            end if
+
+            set property pAlignToSide of pScriptObject to tSide
+
+            -- now set y and maintain x
+            get property "loc" of pScriptObject
+            put the result into tLoc
+            split tLoc by "," into tList
+            if pAlignToSide is "left" or pAlignToSide is "right" then
+              put element 1 of tList & "," & tFixedLoc into tLoc
+            else
+              put tFixedLoc & "," & element 2 of tList into tLoc
+            end if
+
+            -- set loc
+            set property "loc" of pScriptObject to tLoc
+          end if
+    end handler
+
+
+
+
+  public handler centerBoxWithinBox(inout xPathToCenter as Path, in pFocalPath as Path) returns nothing
+      // 0 out
+      translate xPathToCenter by [-the x of the bounding box of xPathToCenter, - the y of the bounding box of xPathToCenter]
+      // Center
+      translate xPathToCenter by [the right of the bounding box of pFocalPath - the width of the bounding box of pFocalPath/2 - the width of the bounding box of xPathToCenter/2, \
+        the bottom of the bounding box of pFocalPath - the height of the bounding box of pFocalPath/2 - the height of the bounding box of xPathToCenter/2]
+  end handler
+
+
+
+
+
+end widget
