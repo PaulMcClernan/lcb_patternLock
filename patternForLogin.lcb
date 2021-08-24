@@ -5,6 +5,8 @@ widget community.ferruslogic.widget.patternlogin
     use com.livecode.library.widgetutils
     use com.livecode.engine
     use com.livecode.math
+    use com.livecode.type
+    use com.livecode.system
 
 
     metadata title is "Pattern 4 Login"
@@ -22,12 +24,9 @@ widget community.ferruslogic.widget.patternlogin
     private variable mCirclePathList as List
     private variable mRectList as List
     private variable mBackColor as Color
+    private variable mNodePathList as List
 
     constant kRadius is 5
-
-
-
-
 
     metadata backgroundColor.default is "244,244,244"
     metadata backgroundColor.editor	is "com.livecode.pi.color"
@@ -39,13 +38,20 @@ widget community.ferruslogic.widget.patternlogin
     metadata backgroundOpacity.label is "background Opacity"
 
     private handler setBackgroundOpacity(in pBackgroundOpacity as Real)
-        if pBackgroundOpacity is not empty then
+        if pBackgroundOpacity is a number then
             if pBackgroundOpacity >= 0 and pBackgroundOpacity <= 100 then
                   put pBackgroundOpacity / 100 into mBackgroundOpacity
+            else if pBackgroundOpacity < 0 then
+                    put 0 into mBackgroundOpacity
+            else if pBackgroundOpacity > 100 then
+                    put 1 into mBackgroundOpacity
             end if
+        else
+            put 0 into mBackgroundOpacity
         end if
 
         redraw all
+
     end handler
 
 
@@ -66,15 +72,17 @@ widget community.ferruslogic.widget.patternlogin
 
 
     public handler OnLoad(in pProperties as Array)
-      if "backgroundOpacity" is among the keys of pProperties then
-			put pProperties["backgroundOpacity"] into mBackgroundOpacity
-		end if
+        if "backgroundOpacity" is among the keys of pProperties then
+            put pProperties["backgroundOpacity"] into mBackgroundOpacity
+        end if
     end handler
 
 
 
- 	public handler OnSave(out rProperties as Array)
-    	put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
+    public handler OnSave(out rProperties as Array)
+        put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
+
+
     end handler
 
 
@@ -93,15 +101,15 @@ widget community.ferruslogic.widget.patternlogin
         variable tExtraspace as Real
 
         if mHeight > mWidth then
-          put (mHeight - mWidth)/2 into tExtraspace
-          put rectangle [0, tExtraspace, mWidth, mHeight - tExtraspace] into mWorkRect
+            put (mHeight - mWidth)/2 into tExtraspace
+            put rectangle [0, tExtraspace, mWidth, mHeight - tExtraspace] into mWorkRect
 
         else if mHeight < mWidth then
             put (mWidth - mHeight)/2 into tExtraspace
             put rectangle [tExtraspace, 0, mWidth - tExtraspace, mHeight] into mWorkRect
 
         else
-          put rectangle [0, 0, mWidth, mHeight] into mWorkRect
+            put rectangle [0, 0, mWidth, mHeight] into mWorkRect
 
         end if
 
@@ -147,7 +155,7 @@ widget community.ferruslogic.widget.patternlogin
 
 
     public handler OnPaint()
-    	set the antialias of this canvas to true
+        set the antialias of this canvas to true
         if mRecalculate then
           updateParameters()
         end if
@@ -157,33 +165,29 @@ widget community.ferruslogic.widget.patternlogin
         set the paint of this canvas to my background paint
         set the opacity of this canvas to mBackgroundOpacity
 
-        // TODO: Preguntarle a Del como poner los bordes redondeados
         fill rounded rectangle path of mWorkRect with radius 8 on this canvas
 
         set the opacity of this canvas to 1
+
         repeat for each element tElement in  mCirclePathList
             set the paint of this canvas to my foreground paint
-            
-
             set the opacity of this canvas to 0.1
 
-          if not mNodePathList is [] then  
-           if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
-            
-           // if  (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) and (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) then
-         		set the opacity of this canvas to 0.5
-            else
-            	
+            if not mNodePathList is [] then
+                if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
+                    // if  (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) and (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) then
+                    set the opacity of this canvas to 0.5
+                else
 
+                end if
             end if
-        end if
 
             fill tElement on this canvas
             set the opacity of this canvas to 1
             ---set the radius of tElement to 5
 
             fill circle path centered at rectCenter(the bounding box of tElement) with radius 5 on this canvas
-              
+
         end repeat
 
 
@@ -195,7 +199,7 @@ widget community.ferruslogic.widget.patternlogin
 
         		variable tCurrentNode as Integer
         		repeat with tCurrentNode from 2 up to the number of elements in mNodePathList
-        			line to nodeNumbertoCenter( element tCurrentNode of mNodePathList) on this canvas 
+        			line to nodeNumbertoCenter( element tCurrentNode of mNodePathList) on this canvas
         		end repeat
         	end if
 
@@ -204,59 +208,73 @@ widget community.ferruslogic.widget.patternlogin
 
 			stroke this canvas
         end if
-        
+
 
 
     end handler
 
 
-   private variable mMouseIsDown as Boolean
+  private variable mMouseIsDown as Boolean
 
- public handler OnMouseDown()
-   		put true into mMouseIsDown
-   		put [] into mNodePathList
-    end handler
+  public handler OnMouseDown()
+    put true into mMouseIsDown
+    put [] into mNodePathList
+  end handler
 
 
+  public handler OnMouseUp()
+    variable tString as String
+    put false into mMouseIsDown
+    put "" into tString
 
- public handler OnMouseUp()
-   put false into mMouseIsDown
+    if mNodePathList is not [] then
 
-   	post "Login" to my script object
-   put [] into mNodePathList
-   redraw all
- end handler
 
-    private variable mNodePathList as List
+        post "Login" to my script object with [ tString ]
+    end if
+
+    put [] into mNodePathList
+    redraw all
+  end handler
+
+
 
   public handler OnMouseMove()
-  	variable tElement as Path
-  	variable tTNode as Integer
+    variable tElement as Path
+    variable tTNode as Integer
+    variable tPosition as Point
 
-	   if mMouseIsDown then
-	   	 repeat for each element tElement in  mCirclePathList
- 			if (the mouse position) is within the bounding box of tElement then
- 				put (the index of tElement in mCirclePathList) into tTNode
+    put the mouse position into tPosition
 
- 				if not (tTNode is in mNodePathList)  then
- 					push (the index of tElement in mCirclePathList) onto back of mNodePathList 					
- 					execute script "mobileVibrate" with [1]
- 				end if
- 				
- 			end if
-         end repeat
+    if mMouseIsDown then
+        repeat for each element tElement in  mCirclePathList
+          if (tPosition) is within the bounding box of tElement then
+            put (the index of tElement in mCirclePathList) into tTNode
 
-          redraw all
-	   end if 
+            if not (tTNode is in mNodePathList)  then
+              push (the index of tElement in mCirclePathList) onto back of mNodePathList
+
+              if the operating system is "android" then
+
+              else if the operating system is "ios" then
+                  execute script "mobileVibrate" with [1]
+
+              end if
+            end if
+
+          end if
+        end repeat
+
+        redraw all
+    end if
+
+  end handler
 
 
-    end handler
 
-
-
- private handler nodeNumbertoCenter(in pNodeNum as Integer) returns Point
-   		return rectCenter(element pNodeNum of mRectList) 
-    end handler
+  private handler nodeNumbertoCenter(in pNodeNum as Integer) returns Point
+    return rectCenter(element pNodeNum of mRectList)
+  end handler
 
 -------------------------------------helpers-------------------------------------------
 
