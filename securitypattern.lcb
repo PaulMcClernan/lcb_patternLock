@@ -1,4 +1,4 @@
-widget community.ferruslogic.widget.patternlogin
+widget community.ferruslogic.widget.securitypattern
 
     use com.livecode.canvas
     use com.livecode.widget
@@ -9,7 +9,7 @@ widget community.ferruslogic.widget.patternlogin
     use com.livecode.system
 
 
-    metadata title is "Pattern 4 Login"
+    metadata title is "Security Pattern"
     metadata author is "FerrusLogic"
     metadata version is "0.0.1"
     metadata svgicon is "M12 16C13.1 16 14 16.9 14 18S13.1 20 12 20 10 19.1 10 18 10.9 16 12 16M12 10C13.1 10 14 10.9 14 12S13.1 14 12 14 10 13.1 10 12 10.9 10 12 10M12 4C13.1 4 14 4.9 14 6S13.1 8 12 8 10 7.1 10 6 10.9 4 12 4M6 16C7.1 16 8 16.9 8 18S7.1 20 6 20 4 19.1 4 18 4.9 16 6 16M6 10C7.1 10 8 10.9 8 12S7.1 14 6 14 4 13.1 4 12 4.9 10 6 10M6 4C7.1 4 8 4.9 8 6S7.1 8 6 8 4 7.1 4 6 4.9 4 6 4M18 16C19.1 16 20 16.9 20 18S19.1 20 18 20 16 19.1 16 18 16.9 16 18 16M18 10C19.1 10 20 10.9 20 12S19.1 14 18 14 16 13.1 16 12 16.9 10 18 10M18 4C19.1 4 20 4.9 20 6S19.1 8 18 8 16 7.1 16 6 16.9 4 18 4Z"
@@ -35,7 +35,8 @@ widget community.ferruslogic.widget.patternlogin
     property backgroundOpacity 		get getBackgroundOpacity		set setBackgroundOpacity
     metadata backgroundOpacity.default is "100"
     metadata backgroundOpacity.editor	is "com.livecode.pi.number"
-    metadata backgroundOpacity.label is "background Opacity"
+    metadata backgroundOpacity.label is "Background Opacity"
+
 
     private handler setBackgroundOpacity(in pBackgroundOpacity as Real)
         if pBackgroundOpacity is a number then
@@ -51,7 +52,6 @@ widget community.ferruslogic.widget.patternlogin
         end if
 
         redraw all
-
     end handler
 
 
@@ -64,6 +64,13 @@ widget community.ferruslogic.widget.patternlogin
     metadata foregroundColor.label is "Color"
     metadata foregroundColor.editor	is "com.livecode.pi.color"
 
+    variable mPatternPath as String
+    property PatternPath get mPatternPath
+    metadata PatternPath.default is ""
+    metadata PatternPath.user_visible is "false"
+
+
+    --------------------------------------------------------------------------------
 
     public handler OnCreate()
         put 0 into mBackgroundOpacity
@@ -81,8 +88,6 @@ widget community.ferruslogic.widget.patternlogin
 
     public handler OnSave(out rProperties as Array)
         put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
-
-
     end handler
 
 
@@ -140,6 +145,7 @@ widget community.ferruslogic.widget.patternlogin
 
         end repeat
 
+        put "" into mPatternPath
         put false into mRecalculate
     end handler
 
@@ -175,7 +181,6 @@ widget community.ferruslogic.widget.patternlogin
 
             if not mNodePathList is [] then
                 if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
-                    // if  (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) and (the mouse position) is within (the bounding box of (the last element of  mNodePathList)) then
                     set the opacity of this canvas to 0.5
                 else
 
@@ -184,30 +189,32 @@ widget community.ferruslogic.widget.patternlogin
 
             fill tElement on this canvas
             set the opacity of this canvas to 1
-            ---set the radius of tElement to 5
 
             fill circle path centered at rectCenter(the bounding box of tElement) with radius 5 on this canvas
 
         end repeat
 
 
-        ------------------Lineas--------------------
-        if mNodePathList is not [] then
-        	set the stroke width of this canvas to 6
-        	if the number of elements in mNodePathList > 1 then
-        		move to nodeNumbertoCenter(the first element of mNodePathList) on this canvas
+        ------------------Lines--------------------
+      if mNodePathList is not [] then
+          set the stroke width of this canvas to 6
 
-        		variable tCurrentNode as Integer
-        		repeat with tCurrentNode from 2 up to the number of elements in mNodePathList
-        			line to nodeNumbertoCenter( element tCurrentNode of mNodePathList) on this canvas
-        		end repeat
-        	end if
+          if the number of elements in mNodePathList > 1 then
+            move to nodeNumbertoCenter(the first element of mNodePathList) on this canvas
 
-        	move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
-			line to (the mouse position) on this canvas
+            variable tCurrentNode as Integer
 
-			stroke this canvas
+            repeat with tCurrentNode from 2 up to the number of elements in mNodePathList
+              line to nodeNumbertoCenter( element tCurrentNode of mNodePathList) on this canvas
+            end repeat
+
         end if
+
+        move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
+        line to (the mouse position) on this canvas
+
+        stroke this canvas
+      end if
 
 
 
@@ -219,18 +226,16 @@ widget community.ferruslogic.widget.patternlogin
   public handler OnMouseDown()
     put true into mMouseIsDown
     put [] into mNodePathList
+    put "" into mPatternPath
   end handler
 
 
   public handler OnMouseUp()
     variable tString as String
     put false into mMouseIsDown
-    put "" into tString
 
     if mNodePathList is not [] then
-
-
-        post "Login" to my script object with [ tString ]
+        post "validatePattern" to my script object with [ mPatternPath ]
     end if
 
     put [] into mNodePathList
@@ -252,14 +257,9 @@ widget community.ferruslogic.widget.patternlogin
             put (the index of tElement in mCirclePathList) into tTNode
 
             if not (tTNode is in mNodePathList)  then
-              push (the index of tElement in mCirclePathList) onto back of mNodePathList
-
-              if the operating system is "android" then
-
-              else if the operating system is "ios" then
-                  execute script "mobileVibrate" with [1]
-
-              end if
+              push tTNode onto back of mNodePathList
+              put intToString(tTNode) after mPatternPath
+              post "newNode" to my script object with [ tTNode ]
             end if
 
           end if
@@ -270,6 +270,12 @@ widget community.ferruslogic.widget.patternlogin
 
   end handler
 
+
+public handler OnTimer()
+
+	// redraw all
+	// schedule timer in 0.3 seconds
+end handler
 
 
   private handler nodeNumbertoCenter(in pNodeNum as Integer) returns Point
