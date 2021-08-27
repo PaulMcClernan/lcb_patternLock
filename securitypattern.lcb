@@ -63,6 +63,7 @@ widget community.ferruslogic.widget.securitypattern
 
 
     private handler setBackgroundOpacity(in pBackgroundOpacity as Real)
+
         if pBackgroundOpacity is a number then
             if pBackgroundOpacity >= 0 and pBackgroundOpacity <= 100 then
                 put pBackgroundOpacity / 100 into mBackgroundOpacity
@@ -86,6 +87,7 @@ widget community.ferruslogic.widget.securitypattern
     private handler getBackgroundOpacity() returns Real
         return mBackgroundOpacity * 100
     end handler
+
 
     private variable mShowPattern as Boolean
     property showPattern 		get mShowPattern		set setShowPattern
@@ -111,8 +113,10 @@ widget community.ferruslogic.widget.securitypattern
     private handler setShowNodesArea(in pValue as Boolean)
         if pValue is a boolean then
           put pValue into mShowNodesArea
+
         else
           put false into mShowNodesArea
+
         end if
 
         redraw all
@@ -130,19 +134,12 @@ widget community.ferruslogic.widget.securitypattern
 
         if pValue is a number and pValue > 0 then
           put pValue into mRoundRadius
-
         else
           put 0 into mRoundRadius
-
         end if
 
         redraw all
     end handler
-
-
-
-
-
 
 
     metadata foregroundColor.default is "50,50,50"
@@ -159,6 +156,7 @@ widget community.ferruslogic.widget.securitypattern
     property PatternPath get mPatternPath
     metadata PatternPath.default is ""
     metadata PatternPath.user_visible is "false"
+    metadata PatternPath.label is "PatternPath"
 
 
     --------------------------------------------------------------------------------
@@ -280,6 +278,7 @@ widget community.ferruslogic.widget.securitypattern
         end if
 
         variable tElement as Path
+        variable tIndex as Integer
 
         set the paint of this canvas to my background paint
         set the opacity of this canvas to mBackgroundOpacity
@@ -290,16 +289,20 @@ widget community.ferruslogic.widget.securitypattern
         set the opacity of this canvas to 1
 
         repeat for each element tElement in  mCirclePathList
+            put (the index of tElement in mCirclePathList) into tIndex
             set the paint of this canvas to my foreground paint
             set the opacity of this canvas to 0.1
 
-              if mCircleOver is (the index of tElement in mCirclePathList) and mShowNodesArea is true then
+              if mShowNodesArea is false then
+                  set the opacity of this canvas to 0
+
+              else if mCircleOver is tIndex and mShowNodesArea is true then
                   set the opacity of this canvas to 0.5
                   set the paint of this canvas to my highlight paint
 
-              else if mShowNodesArea is false then
-                  set the opacity of this canvas to 0
-              else
+              else if tIndex is in mNodePathList then
+                    set the paint of this canvas to my highlight paint
+
               end if
 
             fill tElement on this canvas
