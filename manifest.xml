@@ -32,6 +32,14 @@
   <metadata key="showPattern.default">true</metadata>
   <metadata key="showPattern.editor">com.livecode.pi.boolean</metadata>
   <metadata key="showPattern.label">Show Pattern</metadata>
+  <property name="showNodesArea" get="boolean" set="boolean"/>
+  <metadata key="showNodesArea.default">true</metadata>
+  <metadata key="showNodesArea.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="showNodesArea.label">Show Nodes Area</metadata>
+  <property name="RoundRadius" get="real" set="real"/>
+  <metadata key="RoundRadius.default">8</metadata>
+  <metadata key="RoundRadius.editor">com.livecode.pi.number</metadata>
+  <metadata key="RoundRadius.label">RoundRadius</metadata>
   <metadata key="foregroundColor.default">50,50,50</metadata>
   <metadata key="foregroundColor.label">Color</metadata>
   <metadata key="foregroundColor.editor">com.livecode.pi.color</metadata>

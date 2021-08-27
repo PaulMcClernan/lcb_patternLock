@@ -25,6 +25,7 @@ widget community.ferruslogic.widget.securitypattern
     private variable mRectList as List
     private variable mBackColor as Color
     private variable mNodePathList as List
+    private variable mCircleOver as Integer
 
 
     metadata backgroundColor.default is "244,244,244"
@@ -73,6 +74,48 @@ widget community.ferruslogic.widget.securitypattern
     end handler
 
 
+    private variable mShowNodesArea as Boolean
+    property showNodesArea 		get mShowNodesArea		set setShowNodesArea
+    metadata showNodesArea.default is "true"
+    metadata showNodesArea.editor	is "com.livecode.pi.boolean"
+    metadata showNodesArea.label is "Show Nodes Area"
+
+    private handler setShowNodesArea(in pValue as Boolean)
+        if pValue is a boolean then
+          put pValue into mShowNodesArea
+        else
+          put false into mShowNodesArea
+        end if
+
+        redraw all
+    end handler
+
+
+
+    private variable mRoundRadius as Real
+    property RoundRadius 	get mRoundRadius set setRoundRadius
+    metadata RoundRadius.default is "8"
+    metadata RoundRadius.editor	is "com.livecode.pi.number"
+    metadata RoundRadius.label is "RoundRadius"
+
+    private handler setRoundRadius(in pValue as Real)
+
+        if pValue is a number /* and pValue > 0 */ then
+          put pValue into mRoundRadius
+        else
+          put 0 into mRoundRadius
+        end if
+
+        redraw all
+    end handler
+
+
+
+
+
+
+
+
     metadata foregroundColor.default is "50,50,50"
     metadata foregroundColor.label is "Color"
     metadata foregroundColor.editor	is "com.livecode.pi.color"
@@ -87,7 +130,10 @@ widget community.ferruslogic.widget.securitypattern
 
     public handler OnCreate()
         put 0 into mBackgroundOpacity
+        put 0 into mCircleOver
+        put 8 into mRoundRadius
         put true into mShowPattern
+        put true into mShowNodesArea
         updateParameters()
     end handler
 
@@ -101,13 +147,24 @@ widget community.ferruslogic.widget.securitypattern
             put pProperties["showPattern"] into mShowPattern
         end if
 
+        if "roundRadius" is among the keys of pProperties then
+            put pProperties["roundRadius"] into mRoundRadius
+        end if
+
+        if "showNodesArea" is among the keys of pProperties then
+            put pProperties["showNodesArea"] into mShowNodesArea
+        end if
+
+        put 0 into mCircleOver
     end handler
 
 
 
     public handler OnSave(out rProperties as Array)
-        put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
-        put mShowPattern  		into rProperties["showPattern"]
+        put mBackgroundOpacity into rProperties["backgroundOpacity"]
+        put mShowPattern into rProperties["showPattern"]
+        put mRoundRadius into rProperties["roundRadius"]
+        put mShowNodesArea into rProperties["showNodesArea"]
     end handler
 
 
@@ -192,7 +249,7 @@ widget community.ferruslogic.widget.securitypattern
         set the paint of this canvas to my background paint
         set the opacity of this canvas to mBackgroundOpacity
 
-        fill rounded rectangle path of mWorkRect with radius 8 on this canvas
+        fill rounded rectangle path of mWorkRect with radius (mRoundRadius) on this canvas
 
         set the opacity of this canvas to 1
 
@@ -200,14 +257,11 @@ widget community.ferruslogic.widget.securitypattern
             set the paint of this canvas to my foreground paint
             set the opacity of this canvas to 0.1
 
-            if not mNodePathList is [] then
-
-              if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
+              if mCircleOver is (the index of tElement in mCirclePathList) and mShowNodesArea is true then
                   set the opacity of this canvas to 0.5
-              else
-
+              else if mShowNodesArea is false then
+                  set the opacity of this canvas to 0
               end if
-            end if
 
             fill tElement on this canvas
             set the opacity of this canvas to 1
@@ -261,6 +315,7 @@ widget community.ferruslogic.widget.securitypattern
     end if
 
     put [] into mNodePathList
+    put 0 into mCircleOver
     redraw all
   end handler
 
@@ -273,20 +328,24 @@ widget community.ferruslogic.widget.securitypattern
 
     put the mouse position into tPosition
 
+
     if mMouseIsDown then
         repeat for each element tElement in  mCirclePathList
+          put (the index of tElement in mCirclePathList) into tTNode
+
           if (tPosition) is within the bounding box of tElement then
-            put (the index of tElement in mCirclePathList) into tTNode
+              if not (tTNode is in mNodePathList)  then
+                  push tTNode onto back of mNodePathList
+                  put intToString(tTNode) after mPatternPath
+                  put tTNode into mCircleOver
+                  post "nodeEnter" to my script object with [ the click button ]
+              end if
 
-            if not (tTNode is in mNodePathList)  then
-              push tTNode onto back of mNodePathList
-              put intToString(tTNode) after mPatternPath
-              post "newNode" to my script object with [ tTNode ]
-            end if
-
+          else if tTNode is mCircleOver then
+              put 0 into mCircleOver
+              post "nodeLeave" to my script object with [ the click button ]
           end if
         end repeat
-
         redraw all
     end if
 
