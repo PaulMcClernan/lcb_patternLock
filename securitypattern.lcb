@@ -26,7 +26,6 @@ widget community.ferruslogic.widget.securitypattern
     private variable mBackColor as Color
     private variable mNodePathList as List
 
-    constant kRadius is 5
 
     metadata backgroundColor.default is "244,244,244"
     metadata backgroundColor.editor	is "com.livecode.pi.color"
@@ -59,12 +58,26 @@ widget community.ferruslogic.widget.securitypattern
         return mBackgroundOpacity * 100
     end handler
 
+    private variable mShowPattern as Boolean
+    property showPattern 		get mShowPattern		set setShowPattern
+    metadata showPattern.default is "true"
+    metadata showPattern.editor	is "com.livecode.pi.boolean"
+    metadata showPattern.label is "Show Pattern"
+
+    private handler setShowPattern(in pValue as Boolean)
+        if pValue is a boolean then
+          put pValue into mShowPattern
+        else
+          put false into mShowPattern
+        end if
+    end handler
+
 
     metadata foregroundColor.default is "50,50,50"
     metadata foregroundColor.label is "Color"
     metadata foregroundColor.editor	is "com.livecode.pi.color"
 
-    variable mPatternPath as String
+    private variable mPatternPath as String
     property PatternPath get mPatternPath
     metadata PatternPath.default is ""
     metadata PatternPath.user_visible is "false"
@@ -74,6 +87,7 @@ widget community.ferruslogic.widget.securitypattern
 
     public handler OnCreate()
         put 0 into mBackgroundOpacity
+        put true into mShowPattern
         updateParameters()
     end handler
 
@@ -82,12 +96,18 @@ widget community.ferruslogic.widget.securitypattern
         if "backgroundOpacity" is among the keys of pProperties then
             put pProperties["backgroundOpacity"] into mBackgroundOpacity
         end if
+
+        if "showPattern" is among the keys of pProperties then
+            put pProperties["showPattern"] into mShowPattern
+        end if
+
     end handler
 
 
 
     public handler OnSave(out rProperties as Array)
         put mBackgroundOpacity  		into rProperties["backgroundOpacity"]
+        put mShowPattern  		into rProperties["showPattern"]
     end handler
 
 
@@ -162,6 +182,7 @@ widget community.ferruslogic.widget.securitypattern
 
     public handler OnPaint()
         set the antialias of this canvas to true
+
         if mRecalculate then
           updateParameters()
         end if
@@ -180,11 +201,12 @@ widget community.ferruslogic.widget.securitypattern
             set the opacity of this canvas to 0.1
 
             if not mNodePathList is [] then
-                if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
-                    set the opacity of this canvas to 0.5
-                else
 
-                end if
+              if the x of rectCenter(the bounding box of tElement) is the x of nodeNumbertoCenter(the last element of  mNodePathList) and the y of rectCenter(the bounding box of tElement) is the y of nodeNumbertoCenter(the last element of  mNodePathList) then
+                  set the opacity of this canvas to 0.5
+              else
+
+              end if
             end if
 
             fill tElement on this canvas
@@ -196,10 +218,10 @@ widget community.ferruslogic.widget.securitypattern
 
 
         ------------------Lines--------------------
-      if mNodePathList is not [] then
+      if mNodePathList is not [] and mShowPattern is true then
           set the stroke width of this canvas to 6
 
-          if the number of elements in mNodePathList > 1 then
+          if the number of elements in mNodePathList > 1  then
             move to nodeNumbertoCenter(the first element of mNodePathList) on this canvas
 
             variable tCurrentNode as Integer
@@ -216,8 +238,6 @@ widget community.ferruslogic.widget.securitypattern
         stroke this canvas
       end if
 
-
-
     end handler
 
 
@@ -227,6 +247,8 @@ widget community.ferruslogic.widget.securitypattern
     put true into mMouseIsDown
     put [] into mNodePathList
     put "" into mPatternPath
+
+    OnMouseMove()
   end handler
 
 

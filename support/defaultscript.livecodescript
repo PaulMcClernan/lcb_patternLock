@@ -1,4 +1,5 @@
-﻿script "community.ferruslogic.widget.patternlogin.__DefaultScript"
+﻿script "community.ferruslogic.widget.securitypattern.__DefaultScript"
+
 on validatePattern pPattern
 	put pPattern, the patternPath of me
 end validatePattern
