@@ -41,14 +41,9 @@
   <metadata key="RoundedRadius.default">8</metadata>
   <metadata key="RoundedRadius.editor">com.livecode.pi.number</metadata>
   <metadata key="RoundedRadius.label">RoundedRadius</metadata>
-  <metadata key="foregroundColor.default">50,50,50</metadata>
-  <metadata key="foregroundColor.label">Color</metadata>
+  <metadata key="foregroundColor.default">105,105,105</metadata>
   <metadata key="foregroundColor.editor">com.livecode.pi.color</metadata>
   <metadata key="foregroundColor.label">foregroundColor</metadata>
-  <metadata key="hiliteColor.default">50,50,50</metadata>
-  <metadata key="hiliteColor.label">Color</metadata>
-  <metadata key="hiliteColor.editor">com.livecode.pi.color</metadata>
-  <metadata key="hiliteColor.label">hiliteColor</metadata>
   <property name="PatternPath" get="string"/>
   <metadata key="PatternPath.default"></metadata>
   <metadata key="PatternPath.user_visible">false</metadata>
@@ -61,6 +56,7 @@
   <handler name="OnPaint" parameters="" return="any"/>
   <handler name="OnMouseDown" parameters="" return="any"/>
   <handler name="OnMouseUp" parameters="" return="any"/>
+  <handler name="OnMouseCancel" parameters="" return="any"/>
   <handler name="OnMouseMove" parameters="" return="any"/>
   <handler name="OnTimer" parameters="" return="any"/>
   <handler name="AdjustColorForEnabledState" parameters="in Color,in boolean" return="Color"/>

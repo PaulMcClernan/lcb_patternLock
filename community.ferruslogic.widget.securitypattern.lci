@@ -22,6 +22,7 @@ import module community.ferruslogic.widget.securitypattern
   handler OnPaint() returns optional any
   handler OnMouseDown() returns optional any
   handler OnMouseUp() returns optional any
+  handler OnMouseCancel() returns optional any
   handler OnMouseMove() returns optional any
   handler OnTimer() returns optional any
   handler AdjustColorForEnabledState(in pColor as Color, in pEnabled as Boolean) returns Color
