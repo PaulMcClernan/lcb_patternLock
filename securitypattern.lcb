@@ -53,7 +53,7 @@ widget community.ferruslogic.widget.securitypattern
     private variable mCircleOver as Integer
     private variable mLastNode as Integer
     private variable mCurrentNode as Integer
-
+    private variable mHiliteColor as Color
 
     metadata backgroundColor.default is "244,244,244"
     metadata backgroundColor.editor	is "com.livecode.pi.color"
@@ -137,8 +137,10 @@ widget community.ferruslogic.widget.securitypattern
 
         if pValue is a number and pValue > 0 then
           put pValue into mRoundRadius
+
         else
           put 0 into mRoundRadius
+
         end if
 
         redraw all
@@ -149,6 +151,11 @@ widget community.ferruslogic.widget.securitypattern
     metadata foregroundColor.editor	is "com.livecode.pi.color"
     metadata foregroundColor.label is "foregroundColor"
 
+    metadata hiliteColor.default is "0,128,255"
+    metadata hiliteColor.label is "Color"
+    metadata hiliteColor.editor	is "com.livecode.pi.color"
+    metadata hiliteColor.label is "hiliteColor"
+
 
     private variable mPatternPath as String
     property PatternPath get mPatternPath
@@ -156,6 +163,60 @@ widget community.ferruslogic.widget.securitypattern
     metadata PatternPath.user_visible is "false"
     metadata PatternPath.label is "PatternPath"
 
+
+    private variable mPatternError as Boolean
+    metadata patternError.default is "false"
+    metadata patternError.editor	is "com.livecode.pi.boolean"
+    metadata patternError.user_visible is "false"
+    metadata patternError.label is "PatternError"
+    property patternError get mPatternError set setPatternError
+
+
+    private handler setPatternError(in pValue as Boolean)
+        variable tColor as Color
+
+        if pValue is true then
+
+            if mPatternPath is not "" then
+                  variable tChar as String
+
+                  repeat for each char tChar in mPatternPath
+                      if tChar is "1" then
+                        push 1 onto back of mNodePathList
+                      else if tChar is "2" then
+                        push 2 onto back of mNodePathList
+
+                      else if tChar is "3" then
+                        push 3 onto back of mNodePathList
+
+                      else if tChar is "4" then
+                        push 4 onto back of mNodePathList
+
+                      else if tChar is "5" then
+                        push 5 onto back of mNodePathList
+
+                      else if tChar is "6" then
+                        push 6 onto back of mNodePathList
+
+                      else if tChar is "7" then
+                        push 7 onto back of mNodePathList
+
+                      else if tChar is "8" then
+                        push 8 onto back of mNodePathList
+
+                      else if tChar is "9" then
+                        push 9 onto back of mNodePathList
+
+                      end if
+                  end repeat
+
+                put true into mPatternError
+                redraw all
+            end if
+
+          OnTimer()
+        end if
+    end handler
 
     --------------------------------------------------------------------------------
 
@@ -168,6 +229,8 @@ widget community.ferruslogic.widget.securitypattern
         put false into mAnimated
         put 0 into mCurrentNode
         put 0 into mLastNode
+
+        put false into mPatternError
 
         updateParameters()
     end handler
@@ -190,6 +253,7 @@ widget community.ferruslogic.widget.securitypattern
             put pProperties["showNodesArea"] into mShowNodesArea
         end if
 
+        put false into mPatternError
         put false into mAnimated
         put 0 into mCircleOver
         put 0 into mCurrentNode
@@ -203,6 +267,7 @@ widget community.ferruslogic.widget.securitypattern
         put mShowPattern into rProperties["showPattern"]
         put mRoundRadius into rProperties["roundRadius"]
         put mShowNodesArea into rProperties["showNodesArea"]
+
     end handler
 
 
@@ -248,12 +313,12 @@ widget community.ferruslogic.widget.securitypattern
 
 
           if tCounter is 3 then
-            add  tRectSize to the top of tRect
+            add tRectSize to the top of tRect
             set the left of tRect to the left of mWorkRect
             put 1 into tCounter
 
           else
-            add  tRectSize to the left of tRect
+            add tRectSize to the left of tRect
             add 1 to tCounter
 
           end if
@@ -297,35 +362,49 @@ widget community.ferruslogic.widget.securitypattern
         repeat for each element tElement in  mCirclePathList
             put (the index of tElement in mCirclePathList) into tIndex
             put 5 into tRadius
+
             set the paint of this canvas to my foreground paint
             set the opacity of this canvas to 0.1
 
-              if mShowNodesArea is false then
-                  set the opacity of this canvas to 0
+            if mShowNodesArea is false then
+                set the opacity of this canvas to 0
 
-              else if mCircleOver is tIndex and mShowNodesArea is true then
-                  set the opacity of this canvas to 0.5
-                  set the paint of this canvas to my highlight paint
-                  put tIndex into mLastNode
-                  put 6 into tRadius
-              else if tIndex is in mNodePathList then
+            else if mCircleOver is tIndex then
+                set the opacity of this canvas to 0.5
+
+                if mPatternError is true then
+                    set the paint of this canvas to solid paint with color [1,0.3,0.3]
+                else
                     set the paint of this canvas to my highlight paint
+                end if
 
-              end if
+                put tIndex into mLastNode
+                put 6 into tRadius
 
+            else if tIndex is in mNodePathList then
+                if mPatternError is true then
+                    set the paint of this canvas to solid paint with color [1,0.3,0.3]
+                else
+                    set the paint of this canvas to my highlight paint
+                end if
+
+            end if
 
             fill tElement on this canvas
             set the opacity of this canvas to 1
 
             fill circle path centered at rectCenter(the bounding box of tElement) with radius tRadius on this canvas
-
         end repeat
 
 
         ------------------Lines--------------------
       if mNodePathList is not [] and mShowPattern is true then
           set the stroke width of this canvas to 6
-          set the paint of this canvas to my highlight paint
+          if mPatternError is true then
+              set the paint of this canvas to solid paint with color [1,0.3,0.3]
+          else
+              set the paint of this canvas to my highlight paint
+          end if
 
           if the number of elements in mNodePathList > 1  then
             move to nodeNumbertoCenter(the first element of mNodePathList) on this canvas
@@ -342,12 +421,14 @@ widget community.ferruslogic.widget.securitypattern
 
         end if
 
-        move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
-        line to (the mouse position) on this canvas
-
+        if mPatternError is false then
+            move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
+            line to (the mouse position) on this canvas
+        end if
         stroke this canvas
       end if
 
+        put false into mPatternError
 
     end handler
 
@@ -358,6 +439,7 @@ widget community.ferruslogic.widget.securitypattern
     put true into mMouseIsDown
     put [] into mNodePathList
     put "" into mPatternPath
+    put false into mPatternError
 
     OnMouseMove()
     post "mouseDown" to my script object with [the click button formatted as string]
@@ -377,24 +459,24 @@ widget community.ferruslogic.widget.securitypattern
     redraw all
 
     if the mouse position is within my bounds then
-			post "mouseUp" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+			post "mouseUp" to my script object with [the click button formatted as string]
 		else
-			post "mouseRelease" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+			post "mouseRelease" to my script object with [the click button formatted as string]
 		end if
   end handler
 
 
 	public handler OnMouseCancel()
-		post "mouseRelease" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+		post "mouseRelease" to my script object with [the click button formatted as string]
 	end handler
 
   public handler OnMouseMove()
     variable tElement as Path
     variable tTNode as Integer
     variable tPosition as Point
+    variable tColor as String
 
     put the mouse position into tPosition
-
 
     if mMouseIsDown then
         repeat for each element tElement in  mCirclePathList
@@ -412,19 +494,27 @@ widget community.ferruslogic.widget.securitypattern
           else if tTNode is mCircleOver then
               put 0 into mCircleOver
               post "nodeLeave" to my script object with [ the click button ]
+
           end if
         end repeat
-        redraw all
-    end if
 
+        redraw all
+
+    end if
     post "mouseMove" to my script object with [the x of tPosition formatted as string,the y of tPosition formatted as string]
   end handler
 
 
 public handler OnTimer()
+  variable tHiliteColor as String
 
-	redraw all
-	schedule timer in 0.3 seconds
+  if mPatternError is true then
+    schedule timer in 0.5 seconds
+  else
+    put [] into mNodePathList
+    put "" into mPatternPath
+    redraw all
+  end if
 end handler
 
 
@@ -435,6 +525,7 @@ end handler
 
   private handler AdjustPath(in pNodeNum as Integer) returns nothing
       variable tLastNode as Integer
+
       if mNodePathList is [] then
         return nothing
       end if
@@ -510,6 +601,7 @@ end handler
         end if
       end if
   end handler
+
 -------------------------------------helpers-------------------------------------------
 
     public handler AdjustColorForEnabledState(in pColor as Color, in pEnabled as Boolean) returns Color
