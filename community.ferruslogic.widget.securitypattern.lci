@@ -19,6 +19,7 @@ import module community.ferruslogic.widget.securitypattern
   handler OnSave(out rProperties as Array) returns optional any
   handler updateParameters() returns nothing
   handler OnGeometryChanged() returns optional any
+  handler OnClose() returns optional any
   handler OnPaint() returns optional any
   handler OnMouseDown() returns optional any
   handler OnMouseUp() returns optional any

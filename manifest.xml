@@ -62,6 +62,7 @@
   <handler name="OnSave" parameters="out array" return="any"/>
   <handler name="updateParameters" parameters="" return="nothing"/>
   <handler name="OnGeometryChanged" parameters="" return="any"/>
+  <handler name="OnClose" parameters="" return="any"/>
   <handler name="OnPaint" parameters="" return="any"/>
   <handler name="OnMouseDown" parameters="" return="any"/>
   <handler name="OnMouseUp" parameters="" return="any"/>
