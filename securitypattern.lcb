@@ -150,10 +150,8 @@ widget community.ferruslogic.widget.securitypattern
     metadata foregroundColor.label is "foregroundColor"
 
     metadata hiliteColor.default is "0,128,255"
-    metadata hiliteColor.label is "Color"
     metadata hiliteColor.editor	is "com.livecode.pi.color"
     metadata hiliteColor.label is "hiliteColor"
-
 
     private variable mPatternPath as String
     property PatternPath get mPatternPath
@@ -359,6 +357,8 @@ widget community.ferruslogic.widget.securitypattern
             cancel timer
         end if
 
+
+
         set the antialias of this canvas to true
 
         if mRecalculate then
@@ -369,8 +369,16 @@ widget community.ferruslogic.widget.securitypattern
         variable tElement as Path
         variable tIndex as Integer
         variable tRadius  as Integer
+        variable tDisabled  as Boolean
 
-        set the paint of this canvas to my background paint
+        put my disabled into tDisabled
+
+        if tDisabled then
+            set the paint of this canvas to solid paint with color [0.88,0.88,0.88]
+        else
+            set the paint of this canvas to my background paint
+        end if
+
         set the opacity of this canvas to mBackgroundOpacity
 
         fill rounded rectangle path of mWorkRect with radius ( mRoundRadius ) on this canvas
@@ -388,7 +396,10 @@ widget community.ferruslogic.widget.securitypattern
                 set the opacity of this canvas to 0
             end if
 
-            if mCircleOver is tIndex then
+            if tDisabled then
+                set the paint of this canvas to solid paint with color [0.5,0.5,0.5]
+
+            else if mCircleOver is tIndex then
                 if mShowNodesArea is true then
                     set the opacity of this canvas to 0.5
                 end if
@@ -497,7 +508,7 @@ widget community.ferruslogic.widget.securitypattern
 
     put the mouse position into tPosition
 
-    if mMouseIsDown then
+    if mMouseIsDown and my disabled is false then
         repeat for each element tElement in  mCirclePathList
           put (the index of tElement in mCirclePathList) into tTNode
 

@@ -45,7 +45,6 @@
   <metadata key="foregroundColor.editor">com.livecode.pi.color</metadata>
   <metadata key="foregroundColor.label">foregroundColor</metadata>
   <metadata key="hiliteColor.default">0,128,255</metadata>
-  <metadata key="hiliteColor.label">Color</metadata>
   <metadata key="hiliteColor.editor">com.livecode.pi.color</metadata>
   <metadata key="hiliteColor.label">hiliteColor</metadata>
   <property name="PatternPath" get="string"/>
