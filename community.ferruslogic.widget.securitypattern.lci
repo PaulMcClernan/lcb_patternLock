@@ -11,6 +11,7 @@ import module community.ferruslogic.widget.securitypattern
   use com.livecode.logic
   use com.livecode.char
   use com.livecode.array
+  use com.livecode.system
   use com.livecode.byte
   use com.livecode.mathfoundation
   use com.livecode.typeconvert

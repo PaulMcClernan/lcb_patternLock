@@ -105,25 +105,6 @@ widget community.ferruslogic.widget.securitypattern
     end handler
 
 
-    private variable mShowNodesArea as Boolean
-    property showNodesArea 		get mShowNodesArea		set setShowNodesArea
-    metadata showNodesArea.default is "true"
-    metadata showNodesArea.editor	is "com.livecode.pi.boolean"
-    metadata showNodesArea.label is "Show Nodes Area"
-
-    private handler setShowNodesArea(in pValue as Boolean)
-        if pValue is a boolean then
-          put pValue into mShowNodesArea
-
-        else
-          put false into mShowNodesArea
-
-        end if
-
-        redraw all
-    end handler
-
-
 
     private variable mRoundRadius as Real
     property RoundedRadius 	get mRoundRadius set setRoundRadius
@@ -154,10 +135,80 @@ widget community.ferruslogic.widget.securitypattern
     metadata hiliteColor.label is "hiliteColor"
 
     private variable mPatternPath as String
-    property PatternPath get mPatternPath
+    property PatternPath get mPatternPath set setPatternPath
     metadata PatternPath.default is ""
     metadata PatternPath.user_visible is "false"
     metadata PatternPath.label is "PatternPath"
+
+    property PIN get mPatternPath set setPatternPath
+    metadata PIN.default is ""
+    metadata PatternPath.user_visible is "false"
+    metadata PIN.label is "PIN"
+
+    private handler setPatternPath(in pValue as String)
+        put "" into mPatternPath
+        put [] into mNodePathList
+
+        if pValue is not "" then
+            variable tChar as String
+
+            repeat for each char tChar in pValue
+                if the number of elements in mNodePathList > 9 or tChar is in mPatternPath then
+                  return nothing
+                end if
+
+
+                if tChar is "1" then
+                  AdjustPath(1)
+                  push 1 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "2" then
+                  AdjustPath(2)
+                  push 2 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "3" then
+                  AdjustPath(3)
+                  push 3 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "4" then
+                  AdjustPath(4)
+                  push 4 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "5" then
+                  AdjustPath(5)
+                  push 5 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "6" then
+                  AdjustPath(6)
+                  push 6 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "7" then
+                  AdjustPath(7)
+                  push 7 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "8" then
+                  AdjustPath(8)
+                  push 8 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                else if tChar is "9" then
+                  AdjustPath(9)
+                  push 9 onto back of mNodePathList
+                  put tChar after mPatternPath
+
+                end if
+            end repeat
+      end if
+            cancel timer
+            redraw all
+    end handler
 
 
     private variable mPatternError as Boolean
@@ -226,38 +277,6 @@ widget community.ferruslogic.widget.securitypattern
     end handler
 
 
-
-    private variable mFixed as Boolean
-    metadata Fixed.default is "false"
-    metadata Fixed.editor	is "com.livecode.pi.boolean"
-    metadata Fixed.label is "Pattern Fixed"
-    property Fixed get mFixed set setPatternFixed
-
-    private handler setPatternFixed(in pValue as Boolean)
-        if pValue is not true then
-          put false into mFixed
-
-          variable tTotal as Integer
-          variable tCounter as Integer
-
-          put 1 into tTotal
-
-          repeat with tCounter from 1 up to 9
-              put 6 into mRadius[ tCounter ]
-          end repeat
-
-          put [] into mNodePathList
-          put "" into mPatternPath
-          put false into mAnimatedRun
-          put false into mAnimated
-          cancel timer
-          redraw all
-
-        else
-          put true into mFixed
-
-        end if
-    end handler
     --------------------------------------------------------------------------------
 
     public handler OnCreate()
@@ -265,11 +284,8 @@ widget community.ferruslogic.widget.securitypattern
         put 0 into mCircleOver
         put 8 into mRoundRadius
         put true into mShowPattern
-        put true into mShowNodesArea
         put false into mAnimated
         put false into mPatternError
-        put false into mFixed
-
         updateParameters()
     end handler
 
@@ -287,14 +303,6 @@ widget community.ferruslogic.widget.securitypattern
             put pProperties["roundRadius"] into mRoundRadius
         end if
 
-        if "showNodesArea" is among the keys of pProperties then
-            put pProperties["showNodesArea"] into mShowNodesArea
-        end if
-
-        if "Fixed" is among the keys of pProperties then
-            put pProperties["Fixed"] into mFixed
-        end if
-
         put false into mPatternError
         put false into mAnimated
         put 0 into mCircleOver
@@ -306,8 +314,6 @@ widget community.ferruslogic.widget.securitypattern
         put mBackgroundOpacity into rProperties["backgroundOpacity"]
         put mShowPattern into rProperties["showPattern"]
         put mRoundRadius into rProperties["roundRadius"]
-        put mShowNodesArea into rProperties["showNodesArea"]
-        put mFixed into rProperties["Fixed"]
 
     end handler
 
@@ -319,11 +325,18 @@ widget community.ferruslogic.widget.securitypattern
         variable tRect as Rectangle
         variable tRectSize as Real
         variable tCounter as Integer
+        variable tRadius as Integer
         variable tExtraspace as Real
 
         put my height into mHeight
         put my width into mWidth
         put 1 into tCounter
+
+        if the operating system is "ios" or the operating system is "android" then
+            put 25 into tRadius
+        else
+            put 6 into tRadius
+        end if
 
         if mHeight > mWidth then
             put (mHeight - mWidth)/2 into tExtraspace
@@ -346,7 +359,7 @@ widget community.ferruslogic.widget.securitypattern
 
         repeat with xC from 1 up to 9
           push tRect onto back of mRectList
-          push circle path centered at point [(the left of tRect) + (the width of tRect)/2,(the top of tRect) + (the height of tRect)/2] with radius 25 onto back of mCirclePathList
+          push circle path centered at point [(the left of tRect) + (the width of tRect)/2,(the top of tRect) + (the height of tRect)/2] with radius tRadius onto back of mCirclePathList
 
           if tCounter is 3 then
             add tRectSize to the top of tRect
@@ -416,28 +429,17 @@ widget community.ferruslogic.widget.securitypattern
 
         fill rounded rectangle path of mWorkRect with radius ( mRoundRadius ) on this canvas
 
-        set the opacity of this canvas to 1
-
         repeat for each element tElement in mCirclePathList
             put (the index of tElement in mCirclePathList) into tIndex
             put mRadius[ tIndex ] into tRadius
 
             set the paint of this canvas to my foreground paint
-            set the opacity of this canvas to 0.1
-
-            if mShowNodesArea is false then
-                set the opacity of this canvas to 0
-            end if
+            set the opacity of this canvas to 0
 
             if tDisabled then
                 set the paint of this canvas to solid paint with color [0.5,0.5,0.5]
 
             else if mCircleOver is tIndex then
-                if mShowNodesArea is true then
-                    set the opacity of this canvas to 0.5
-                end if
-
-
                 if mPatternError is true then
                     set the paint of this canvas to solid paint with color [1,0.3,0.3]
                 else
@@ -471,8 +473,10 @@ widget community.ferruslogic.widget.securitypattern
 
           else if mPatternError is true then
               set the paint of this canvas to solid paint with color [1,0.3,0.3]
+
           else
               set the paint of this canvas to my highlight paint
+
           end if
 
           if the number of elements in mNodePathList > 1  then
@@ -486,14 +490,15 @@ widget community.ferruslogic.widget.securitypattern
 
         end if
 
-        if mPatternError is false or mMouseIsDown is true then
+        if mPatternError is false and mMouseIsDown is true then
             move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
             line to (the mouse position) on this canvas
         end if
+
         stroke this canvas
       end if
 
-        put false into mPatternError
+      put false into mPatternError
 
     end handler
 
@@ -504,7 +509,7 @@ widget community.ferruslogic.widget.securitypattern
     put true into mMouseIsDown
     put false into mPatternError
 
-    if mFixed is false and mNodePathList is [] then
+    if mNodePathList is [] then
       put [] into mNodePathList
       put "" into mPatternPath
       OnMouseMove()
@@ -519,14 +524,15 @@ widget community.ferruslogic.widget.securitypattern
     put false into mMouseIsDown
 
     if mNodePathList is not [] then
-        post "validatePattern" to my script object with [ mPatternPath ]
+        variable tCurrentNode as Integer
+        repeat with tCurrentNode from 1 up to the number of elements in mNodePathList
+          put intToString(mNodePathList[ tCurrentNode ]) after mPatternPath
+        end repeat
+        post "InputComplete" to my script object with [ mPatternPath ]
     end if
 
-    if mFixed is false then
-        put [] into mNodePathList
-        put 0 into mCircleOver
-    end if
-
+    put [] into mNodePathList
+    put 0 into mCircleOver
     redraw all
 
     if the mouse position is within my bounds then
@@ -559,7 +565,7 @@ widget community.ferruslogic.widget.securitypattern
                   AdjustPath(tTNode)
                   put 12 into mRadius[tTNode]
                   push tTNode onto back of mNodePathList
-                  put intToString(tTNode) after mPatternPath
+
                   put tTNode into mCircleOver
                   post "nodeEnter" to my script object with [ the click button ]
               end if

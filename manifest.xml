@@ -17,6 +17,7 @@
   <requires name="com.livecode.logic"/>
   <requires name="com.livecode.char"/>
   <requires name="com.livecode.array"/>
+  <requires name="com.livecode.system"/>
   <requires name="com.livecode.byte"/>
   <requires name="com.livecode.mathfoundation"/>
   <requires name="com.livecode.typeconvert"/>
@@ -33,10 +34,6 @@
   <metadata key="showPattern.default">true</metadata>
   <metadata key="showPattern.editor">com.livecode.pi.boolean</metadata>
   <metadata key="showPattern.label">Show Pattern</metadata>
-  <property name="showNodesArea" get="boolean" set="boolean"/>
-  <metadata key="showNodesArea.default">true</metadata>
-  <metadata key="showNodesArea.editor">com.livecode.pi.boolean</metadata>
-  <metadata key="showNodesArea.label">Show Nodes Area</metadata>
   <property name="RoundedRadius" get="real" set="real"/>
   <metadata key="RoundedRadius.default">8</metadata>
   <metadata key="RoundedRadius.editor">com.livecode.pi.number</metadata>
@@ -47,19 +44,19 @@
   <metadata key="hiliteColor.default">0,128,255</metadata>
   <metadata key="hiliteColor.editor">com.livecode.pi.color</metadata>
   <metadata key="hiliteColor.label">hiliteColor</metadata>
-  <property name="PatternPath" get="string"/>
+  <property name="PatternPath" get="string" set="string"/>
   <metadata key="PatternPath.default"></metadata>
   <metadata key="PatternPath.user_visible">false</metadata>
   <metadata key="PatternPath.label">PatternPath</metadata>
+  <property name="PIN" get="string" set="string"/>
+  <metadata key="PIN.default"></metadata>
+  <metadata key="PatternPath.user_visible">false</metadata>
+  <metadata key="PIN.label">PIN</metadata>
   <metadata key="patternError.default">false</metadata>
   <metadata key="patternError.editor">com.livecode.pi.boolean</metadata>
   <metadata key="patternError.user_visible">false</metadata>
   <metadata key="patternError.label">PatternError</metadata>
   <property name="patternError" get="boolean" set="boolean"/>
-  <metadata key="Fixed.default">false</metadata>
-  <metadata key="Fixed.editor">com.livecode.pi.boolean</metadata>
-  <metadata key="Fixed.label">Pattern Fixed</metadata>
-  <property name="Fixed" get="boolean" set="boolean"/>
   <handler name="OnCreate" parameters="" return="any"/>
   <handler name="OnLoad" parameters="in array" return="any"/>
   <handler name="OnSave" parameters="out array" return="any"/>
