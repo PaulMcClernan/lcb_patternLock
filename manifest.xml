@@ -56,6 +56,10 @@
   <metadata key="patternError.user_visible">false</metadata>
   <metadata key="patternError.label">PatternError</metadata>
   <property name="patternError" get="boolean" set="boolean"/>
+  <metadata key="Fixed.default">false</metadata>
+  <metadata key="Fixed.editor">com.livecode.pi.boolean</metadata>
+  <metadata key="Fixed.label">Pattern Fixed</metadata>
+  <property name="Fixed" get="boolean" set="boolean"/>
   <handler name="OnCreate" parameters="" return="any"/>
   <handler name="OnLoad" parameters="in array" return="any"/>
   <handler name="OnSave" parameters="out array" return="any"/>

@@ -225,6 +225,39 @@ widget community.ferruslogic.widget.securitypattern
         end if
     end handler
 
+
+
+    private variable mFixed as Boolean
+    metadata Fixed.default is "false"
+    metadata Fixed.editor	is "com.livecode.pi.boolean"
+    metadata Fixed.label is "Pattern Fixed"
+    property Fixed get mFixed set setPatternFixed
+
+    private handler setPatternFixed(in pValue as Boolean)
+        if pValue is not true then
+          put false into mFixed
+
+          variable tTotal as Integer
+          variable tCounter as Integer
+
+          put 1 into tTotal
+
+          repeat with tCounter from 1 up to 9
+              put 6 into mRadius[ tCounter ]
+          end repeat
+
+          put [] into mNodePathList
+          put "" into mPatternPath
+          put false into mAnimatedRun
+          put false into mAnimated
+          cancel timer
+          redraw all
+
+        else
+          put true into mFixed
+
+        end if
+    end handler
     --------------------------------------------------------------------------------
 
     public handler OnCreate()
@@ -234,8 +267,8 @@ widget community.ferruslogic.widget.securitypattern
         put true into mShowPattern
         put true into mShowNodesArea
         put false into mAnimated
-
         put false into mPatternError
+        put false into mFixed
 
         updateParameters()
     end handler
@@ -258,6 +291,10 @@ widget community.ferruslogic.widget.securitypattern
             put pProperties["showNodesArea"] into mShowNodesArea
         end if
 
+        if "Fixed" is among the keys of pProperties then
+            put pProperties["Fixed"] into mFixed
+        end if
+
         put false into mPatternError
         put false into mAnimated
         put 0 into mCircleOver
@@ -270,6 +307,7 @@ widget community.ferruslogic.widget.securitypattern
         put mShowPattern into rProperties["showPattern"]
         put mRoundRadius into rProperties["roundRadius"]
         put mShowNodesArea into rProperties["showNodesArea"]
+        put mFixed into rProperties["Fixed"]
 
     end handler
 
@@ -281,12 +319,11 @@ widget community.ferruslogic.widget.securitypattern
         variable tRect as Rectangle
         variable tRectSize as Real
         variable tCounter as Integer
+        variable tExtraspace as Real
 
         put my height into mHeight
         put my width into mWidth
         put 1 into tCounter
-
-        variable tExtraspace as Real
 
         if mHeight > mWidth then
             put (mHeight - mWidth)/2 into tExtraspace
@@ -307,13 +344,9 @@ widget community.ferruslogic.widget.securitypattern
         put [] into mRectList
         put [] into mCirclePathList
 
-
-
         repeat with xC from 1 up to 9
           push tRect onto back of mRectList
-
           push circle path centered at point [(the left of tRect) + (the width of tRect)/2,(the top of tRect) + (the height of tRect)/2] with radius 25 onto back of mCirclePathList
-
 
           if tCounter is 3 then
             add tRectSize to the top of tRect
@@ -433,7 +466,10 @@ widget community.ferruslogic.widget.securitypattern
       if mNodePathList is not [] and mShowPattern is true then
           set the stroke width of this canvas to 3
 
-          if mPatternError is true then
+          if tDisabled then
+              set the paint of this canvas to solid paint with color [0.5,0.5,0.5]
+
+          else if mPatternError is true then
               set the paint of this canvas to solid paint with color [1,0.3,0.3]
           else
               set the paint of this canvas to my highlight paint
@@ -450,7 +486,7 @@ widget community.ferruslogic.widget.securitypattern
 
         end if
 
-        if mPatternError is false then
+        if mPatternError is false or mMouseIsDown is true then
             move to nodeNumbertoCenter(the last element of mNodePathList) on this canvas
             line to (the mouse position) on this canvas
         end if
@@ -466,11 +502,14 @@ widget community.ferruslogic.widget.securitypattern
 
   public handler OnMouseDown()
     put true into mMouseIsDown
-    put [] into mNodePathList
-    put "" into mPatternPath
     put false into mPatternError
 
-    OnMouseMove()
+    if mFixed is false and mNodePathList is [] then
+      put [] into mNodePathList
+      put "" into mPatternPath
+      OnMouseMove()
+    end if
+
     post "mouseDown" to my script object with [the click button formatted as string]
   end handler
 
@@ -483,8 +522,11 @@ widget community.ferruslogic.widget.securitypattern
         post "validatePattern" to my script object with [ mPatternPath ]
     end if
 
-    put [] into mNodePathList
-    put 0 into mCircleOver
+    if mFixed is false then
+        put [] into mNodePathList
+        put 0 into mCircleOver
+    end if
+
     redraw all
 
     if the mouse position is within my bounds then
@@ -515,7 +557,7 @@ widget community.ferruslogic.widget.securitypattern
           if (tPosition) is within the bounding box of tElement then
               if not (tTNode is in mNodePathList)  then
                   AdjustPath(tTNode)
-                  put 9 into mRadius[tTNode]
+                  put 12 into mRadius[tTNode]
                   push tTNode onto back of mNodePathList
                   put intToString(tTNode) after mPatternPath
                   put tTNode into mCircleOver
@@ -542,10 +584,10 @@ widget community.ferruslogic.widget.securitypattern
 
 
   variable mAnimatedRun as Boolean
+  variable mError as Boolean
 
 
   public handler OnTimer()
-      variable tHiliteColor as String
       variable tTotal as Integer
       variable tCounter as Integer
 
@@ -554,7 +596,7 @@ widget community.ferruslogic.widget.securitypattern
 
       repeat with tCounter from 1 up to 9
           if mRadius[ tCounter ]  > 6 and  mPatternError is false and mMouseIsDown is true then
-              put mRadius[ tCounter ]  - 1 into mRadius[ tCounter ]
+              put mRadius[ tCounter ]  - 2 into mRadius[ tCounter ]
 
               if mAnimated is not true then
                   put true into mAnimated
@@ -570,27 +612,30 @@ widget community.ferruslogic.widget.securitypattern
 
           put true into mAnimatedRun
           put false into mAnimated
+          put true into mError
           cancel timer
-          schedule timer in 0.5 seconds
+          schedule timer in 1 seconds
 
       else if mAnimated is true and mPatternError is false  and mMouseIsDown is true then
-
-          redraw all
-          schedule timer in 0.1 seconds
+          if mError is not true then
+              redraw all
+              schedule timer in 0.1 seconds
+          end if
 
       else if mMouseIsDown is false and mAnimated is true then
+          if mError is not true then
+              put false into mAnimatedRun
+              put false into mAnimated
 
-          put false into mAnimatedRun
-          put false into mAnimated
-
-          redraw all
-          cancel timer
-
+              redraw all
+              cancel timer
+          end if
       else
           put [] into mNodePathList
           put "" into mPatternPath
           put false into mAnimatedRun
           put false into mAnimated
+          put false into mError
           redraw all
           cancel timer
       end if
@@ -614,83 +659,83 @@ widget community.ferruslogic.widget.securitypattern
       if pNodeNum is 1 then
         if tLastNode is 3 and not(2 is in mNodePathList) then
           push 2 onto back of mNodePathList
-          put 9 into mRadius[2]
+          put 12 into mRadius[2]
 
         else if tLastNode is 9 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
 
         else if tLastNode is 7 and not(4 is in mNodePathList) then
           push 4 onto back of mNodePathList
-          put 9 into mRadius[4]
+          put 12 into mRadius[4]
 
         end if
 
       else if pNodeNum is 2 then
         if tLastNode is 8 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
         end if
 
       else if pNodeNum is 3 then
         if tLastNode is 1 and not(2 is in mNodePathList) then
           push 2 onto back of mNodePathList
-          put 9 into mRadius[2]
+          put 12 into mRadius[2]
 
         else if tLastNode is 9 and not(6 is in mNodePathList) then
           push 6 onto back of mNodePathList
-          put 9 into mRadius[6]
+          put 12 into mRadius[6]
 
         else if tLastNode is 7 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
         end if
 
       else if pNodeNum is 4 then
         if tLastNode is 6 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
         end if
 
       else if pNodeNum is 6 then
         if tLastNode is 4 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
         end if
 
       else if pNodeNum is 7 then
         if tLastNode is 1 and not(4 is in mNodePathList) then
           push 4 onto back of mNodePathList
-          put 9 into mRadius[4]
+          put 12 into mRadius[4]
 
         else if tLastNode is 3 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
 
         else if tLastNode is 9 and not(8 is in mNodePathList) then
           push 8 onto back of mNodePathList
-          put 9 into mRadius[8]
+          put 12 into mRadius[8]
 
         end if
 
       else if pNodeNum is 8 then
         if tLastNode is 2 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
         end if
 
       else if pNodeNum is 9 then
         if tLastNode is 7 and not(8 is in mNodePathList) then
           push 8 onto back of mNodePathList
-          put 9 into mRadius[8]
+          put 12 into mRadius[8]
 
         else if tLastNode is 1 and not(5 is in mNodePathList) then
           push 5 onto back of mNodePathList
-          put 9 into mRadius[5]
+          put 12 into mRadius[5]
 
         else if tLastNode is 3 and not(6 is in mNodePathList) then
           push 6 onto back of mNodePathList
-          put 9 into mRadius[6]
+          put 12 into mRadius[6]
 
         end if
       end if
