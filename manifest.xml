@@ -1,8 +1,8 @@
 <package version="0.0">
-  <name>community.ferruslogic.widget.securitypattern</name>
-  <title>Security Pattern</title>
+  <name>community.ferruslogic.widget.patternlock</name>
+  <title>Pattern Lock</title>
   <author>FerrusLogic</author>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <license>community</license>
   <type>widget</type>
   <requires name="com.livecode.canvas"/>
