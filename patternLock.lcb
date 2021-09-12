@@ -316,14 +316,14 @@ widget community.ferruslogic.widget.patternlock
     metadata hiliteColor.label is "hiliteColor"
 
     private variable mPatternPath as String
-    property PatternPath get mPatternPath set setPatternPath
+    property PatternPath get mPatternPath
     metadata PatternPath.default is ""
     metadata PatternPath.user_visible is "false"
     metadata PatternPath.label is "PatternPath"
 
-    property PIN get mPatternPath set setPatternPath
+    property PIN get mPatternPath
     metadata PIN.default is ""
-    metadata PatternPath.user_visible is "false"
+    metadata PIN.user_visible is "false"
     metadata PIN.label is "PIN"
 
     private handler setPatternPath(in pValue as String)

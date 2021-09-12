@@ -1,2 +1,2 @@
  # Pattern Lock
- Pattern Lock as LiveCode widget.
+This widget simulates the lock pattern that we can find mainly on smartphones. When drawing a pattern, a PIN will be generated with the digits 1 to 9. The length of this PIN can range from 1 to 9 digits. For security reasons we should not use PIN with a length less than 4 digits.
